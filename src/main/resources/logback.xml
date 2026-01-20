@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- =================================================================== -->
+    <!--                               Appenders                             -->
+    <!-- =================================================================== -->
+
+    <!-- Console Appender: Outputs logs to the console with color and detailed formatting -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--
+                Pattern explanation:
+                %gray(%d{yyyy-MM-dd HH:mm:ss.SSS}) : Timestamp in gray color
+                %highlight(%-5level)               : Log level (e.g., INFO, DEBUG), left-aligned in 5 chars, highlighted with color
+                %magenta([%thread])                : Thread name in magenta color, enclosed in brackets
+                %blue(%logger)                     : Full Logger name (class name) in blue color
+                %yellow(%M:%L)                     : Method name (%M) and Line number (%L) in yellow color
+                %msg%n                             : The log message followed by a newline
+                %throwable                         : Prints the stack trace if an exception is logged
+
+                WARNING: Using %M (method) and %L (line number) incurs a significant performance cost
+                         and is generally not recommended for production environments.
+            -->
+            <pattern>
+                [%boldGreen(%d{yyyy-MM-dd HH:mm:ss.SSS})] %highlight(%-5level) %magenta([%thread]) %cyan(%logger) [%boldYellow(%M:%L)] : %msg%n%throwable
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- Rolling File Appender: Outputs logs to a file, rolling daily and by size -->
+    <!-- For file logs, method and line number can also be added if needed, but without color -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/resource_server.log</file> <!-- Base log file name -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- Daily rollover plus limiting size of each log file -->
+            <fileNamePattern>logs/resource_server-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <!-- Keep 30 days of history -->
+            <maxHistory>30</maxHistory>
+            <!-- Max file size is 100MB -->
+            <maxFileSize>100MB</maxFileSize>
+            <!-- Total size of archived files -->
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <!-- Pattern for file logs (no color). Add %M:%L if desired for file logs too. -->
+            <!-- Example with method and line for file:
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger %M:%L : %msg%n%throwable</pattern>
+            -->
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} : %msg%n%throwable
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- =================================================================== -->
+    <!--                               Loggers                               -->
+    <!-- =================================================================== -->
+
+    <!-- Root Logger: Default level and appenders for all loggers -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+    <!-- Specific Logger for your application package -->
+    <!-- Set to DEBUG to see more detailed logs from your code, including the filter -->
+    <logger name="com.learning.docker" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <!-- Example: Reduce verbosity of chatty Spring/Hibernate logs if needed -->
+    <!--
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.apache.catalina" level="WARN"/>
+    -->
+
+</configuration>
