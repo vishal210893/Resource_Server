@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/users/status")
                         //.hasAnyAuthority("SCOPE_profile")
-                        .hasRole("developer1")
+                        .hasRole("developer")
                         .requestMatchers("/admin/performance/**").permitAll()
                         .anyRequest()
                         .authenticated())
