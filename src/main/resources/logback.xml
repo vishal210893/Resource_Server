@@ -59,14 +59,14 @@
     <!-- Root Logger: Default level and appenders for all loggers -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
+<!--        <appender-ref ref="FILE"/>-->
     </root>
 
     <!-- Specific Logger for your application package -->
     <!-- Set to DEBUG to see more detailed logs from your code, including the filter -->
-    <logger name="com.learning.docker" level="DEBUG" additivity="false">
+    <logger name="com.learning.oauth" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
+<!--        <appender-ref ref="FILE"/>-->
     </logger>
 
     <!-- Example: Reduce verbosity of chatty Spring/Hibernate logs if needed -->
