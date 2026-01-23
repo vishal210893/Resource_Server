@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -152,6 +155,57 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
+    /**
+     * Handles authorization failures (authenticated but not allowed).
+     *
+     * Note: Method security can throw AuthorizationDeniedException in Spring Security 6;
+     * it typically wraps/extends AccessDeniedException. Handling AccessDeniedException here
+     * prevents it from falling into the generic 500 handler.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+            AccessDeniedException ex, HttpServletRequest request) {
+        log.warn("Access denied for {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                "Access is denied.",
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
+    /**
+     * Handles authentication failures (missing/invalid/expired token).
+     */
+    @ExceptionHandler({OAuth2AuthenticationException.class, AuthenticationException.class})
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(
+            Exception ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+
+        String message;
+        if (ex instanceof OAuth2AuthenticationException oauth2Ex) {
+            message = oauth2Ex.getError() != null && oauth2Ex.getError().getDescription() != null
+                    ? oauth2Ex.getError().getDescription()
+                    : oauth2Ex.getMessage();
+        } else if (ex instanceof AuthenticationException authEx) {
+            message = authEx.getMessage();
+        } else {
+            message = "Authentication failed.";
+        }
+
+        log.warn("Authentication failure for {} {}: {}", request.getMethod(), request.getRequestURI(), message);
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                status.value(),
+                "Unauthorized",
+                message,
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(errorResponse, status);
+    }
 
     /**
      * A generic handler for any other unhandled exceptions.
