@@ -228,6 +228,8 @@ public class SecurityConfig {
                         .hasRole("developer")
                         .requestMatchers("/admin/performance/**")
                         .permitAll()
+                        .requestMatchers("/actuator/**")
+                        .permitAll()
                         .anyRequest()
                         .authenticated()
                 )

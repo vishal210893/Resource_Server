@@ -1,6 +1,6 @@
 spring:
   application:
-    name: Resource Server
+    name: resource-server
   security:
     oauth2:
       resourceserver:
@@ -8,13 +8,31 @@ spring:
           #issuer-uri: http://localhost:8081/realms/oauth-learning
           jwk-set-uri: http://localhost:8081/realms/oauth-learning/protocol/openid-connect/certs
 
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8010/eureka/
+  instance:
+    instance-id: ${spring.application.name}:${instanceId:${random.value}}
+    health-check-url-path: ${server.servlet.context-path}/actuator/health
+    status-page-url-path: ${server.servlet.context-path}/actuator/info
+    home-page-url-path: ${server.servlet.context-path}
+    metadata-map:
+      context-path: ${server.servlet.context-path}
+
 server:
-  port: 8080
+  port: 0
   servlet:
     context-path: /oauth
 
 application:
   version: 0.0.1-SNAPSHOT
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
 
 javamelody:
   # Enable JavaMelody auto-configuration (optional, default: true)

@@ -1,6 +1,8 @@
 package com.learning.oauth.resource_server.controller;
 
 import com.learning.oauth.resource_server.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PostAuthorize;
@@ -75,9 +77,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users")
 public class UserController {
 
+    @Autowired
+    private Environment environment;
+
     @GetMapping("/status")
     public ResponseEntity<String> getStatus() {
-        return ResponseEntity.ok("Working");
+        String port = environment.getProperty("local.server.port");
+        return ResponseEntity.ok("Working Resource Server on port: " + port);
     }
 
     @Secured("ROLE_developer")
@@ -95,7 +101,7 @@ public class UserController {
     @PostAuthorize("returnObject.body.userId == #jwt.subject")
     @GetMapping("/audience")
     public ResponseEntity<User> getEmailFromJwt(@AuthenticationPrincipal Jwt jwt) {
-        return ResponseEntity.ok(new User(jwt.getClaimAsString("name"), jwt.getSubject() + "1"));
+        return ResponseEntity.ok(new User(jwt.getClaimAsString("name"), jwt.getSubject()));
     }
 
 
